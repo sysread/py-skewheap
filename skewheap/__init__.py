@@ -51,6 +51,10 @@ class SkewHeap:
 
     An interesting side effect of this is that skew heaps can be quickly and
     easily merged non-destructively.
+
+    Items added to the heap will be returned in order from lowest to highest.
+    To control the ordering, implement __gt__ on the class of the items being
+    inserted.
     """
     def __init__(self):
         self.size = 0
@@ -64,18 +68,34 @@ class SkewHeap:
 
         return buf
 
+    def __str__(self):
+        return self.__repr__()
+
     @classmethod
-    def merge(cls, a, b):
+    def merge(cls, *heaps):
+        """Non-destructively merges *heaps into a single, new heap. Returns the
+        new heap.
+
+            newheap = SkewHeap.merge(a, b, c, ...)
+        """
         c = SkewHeap()
-        c.size = a.size + b.size
-        c.root = merge_nodes(a.root, b.root)
+
+        for h in heaps:
+            c.size += h.size
+            c.root = merge_nodes(c.root, h.root)
+
         return c
 
     @property
     def is_empty(self):
+        """Returns True if there are no elements in the heap.
+        """
         return self.size == 0
 
     def put(self, *args):
+        """Adds one or more new elements to the heap. Returns the heap's new
+        size.
+        """
         for item in args:
             self.root = merge_nodes(self.root, [item, None, None])
             self.size = self.size + 1
@@ -83,6 +103,9 @@ class SkewHeap:
         return self.size
 
     def take(self):
+        """Removes and returns the top element from the heap. Returns None
+        if the heap is empty.
+        """
         if self.is_empty:
             return None
 
@@ -92,19 +115,37 @@ class SkewHeap:
         return item
 
     def peek(self):
+        """Returns the top element from the heap without removing it. Returns
+        None if the heap is empty.
+        """
         if self.is_empty:
             return None
 
         return self.root[0]
 
-    def adopt(self, other):
-        self.size += other.size
-        self.root = merge_nodes(self.root, other.root)
+    def adopt(self, *heaps):
+        """Merges the elements from additional heaps into this one. The other
+        heaps are left intact.
+        """
+        for h in heaps:
+            self.size += h.size
+            self.root = merge_nodes(self.root, h.root)
+
+        return self.size
 
     def items(self):
+        """Returns a generator of elements in the heap.
+        """
         while not self.is_empty:
             yield self.take()
 
     def drain(self):
-        items = self.items()
-        return list(items)
+        """Removes and returns all elements from the heap as a list.
+        """
+        items = []
+
+        while not self.is_empty:
+            items.append(self.take())
+
+        return items
+
