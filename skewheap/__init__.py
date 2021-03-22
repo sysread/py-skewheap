@@ -45,6 +45,13 @@ def explain_node_str(root, indent=0):
 
 
 class SkewHeap:
+    """A skew heap is a min heap or priority queue which ammortizes the cost of
+    rebalancing using an elegant merge algorithm. All operations on a skew heap
+    are defined in terms of the merge algorithm.
+
+    An interesting side effect of this is that skew heaps can be quickly and
+    easily merged non-destructively.
+    """
     def __init__(self):
         self.size = 0
         self.root = None
@@ -56,6 +63,13 @@ class SkewHeap:
             buf += explain_node_str(self.root, 1)
 
         return buf
+
+    @classmethod
+    def merge(cls, a, b):
+        c = SkewHeap()
+        c.size = a.size + b.size
+        c.root = merge_nodes(a.root, b.root)
+        return c
 
     @property
     def is_empty(self):
@@ -83,7 +97,7 @@ class SkewHeap:
 
         return self.root[0]
 
-    def merge(self, other):
+    def adopt(self, other):
         self.size += other.size
         self.root = merge_nodes(self.root, other.root)
 
@@ -94,17 +108,3 @@ class SkewHeap:
     def drain(self):
         items = self.items()
         return list(items)
-
-
-if __name__ == '__main__':
-    import random
-
-    nums = list(range(1, 1000000))
-    random.shuffle(nums)
-
-    s = SkewHeap()
-    s.put(*nums)
-
-    items = s.items()
-    for item in items:
-        pass
