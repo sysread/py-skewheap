@@ -1,4 +1,7 @@
 def merge_nodes(a, b):
+    """Recursively and non-destructively merges two nodes. Returns the newly
+    created node.
+    """
     if a is None:
         return b
 
@@ -11,10 +14,15 @@ def merge_nodes(a, b):
     return a[0], merge_nodes(b, a[2]), a[1]
 
 def pop_node(root):
+    """Removes the top element from the root of the tree. Returns the element
+    and the merged subtrees.
+    """
     item, left, right = root
     return item, merge_nodes(left, right)
 
 def explain_node_str(root, indent=0):
+    """Returns an indendeted outline-style representation of the subtree.
+    """
     indent_string = "    " * indent
 
     buf = f"{indent_string}Node<item={root[0]}>"
@@ -33,6 +41,7 @@ def explain_node_str(root, indent=0):
         buf += explain_node_str(root[2], indent + 1)
 
     return buf
+
 
 
 class SkewHeap:
@@ -54,7 +63,7 @@ class SkewHeap:
 
     def put(self, *args):
         for item in args:
-            self.root = merge_nodes(self.root, (item, None, None))
+            self.root = merge_nodes(self.root, [item, None, None])
             self.size = self.size + 1
 
         return self.size
@@ -74,6 +83,28 @@ class SkewHeap:
 
         return self.root[0]
 
+    def merge(self, other):
+        self.size += other.size
+        self.root = merge_nodes(self.root, other.root)
+
     def items(self):
         while not self.is_empty:
             yield self.take()
+
+    def drain(self):
+        items = self.items()
+        return list(items)
+
+
+if __name__ == '__main__':
+    import random
+
+    nums = list(range(1, 1000000))
+    random.shuffle(nums)
+
+    s = SkewHeap()
+    s.put(*nums)
+
+    items = s.items()
+    for item in items:
+        pass

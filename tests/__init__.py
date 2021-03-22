@@ -53,6 +53,18 @@ class TestSkewHeap(unittest.TestCase):
         self.assertEqual(s.size, 0)
         self.assertTrue(s.is_empty)
 
+    def test_merge(self):
+        a = SkewHeap()
+        b = SkewHeap()
+
+        a.put(1, 2, 3)
+        b.put(4, 5, 6)
+
+        a.merge(b)
+        self.assertEqual(a.drain(), [1, 2, 3, 4, 5, 6])
+        self.assertEqual(b.drain(), [4, 5, 6])
+
+
     def test_items(self):
         s = SkewHeap()
         s.put(5, 8, 1, 3, 2, 13)
