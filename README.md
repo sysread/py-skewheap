@@ -42,27 +42,27 @@ inserted.
 
 ## Class methods
 
-### merge
+#### merge
 
 ## Properties
 
-### is_empty
+#### is_empty
 
 ## Instance methods
 
-### SkewHeap
+#### SkewHeap
 
-## put
+#### put
 
-## take
+#### take
 
-## peek
+#### peek
 
-## adopt
+#### adopt
 
-## items
+#### items
 
-## drain
+#### drain
 
 ## See also
 
