@@ -1,3 +1,6 @@
+import asyncio
+
+
 def merge_nodes(a, b):
     """Recursively and non-destructively merges two nodes. Returns the newly
     created node.
@@ -63,7 +66,9 @@ class SkewHeap:
     def __repr__(self):
         buf = f"SkewHeap<size={self.size}>:\n"
 
-        if self.root is not None:
+        if self.root is None:
+            buf += "    (Empty)"
+        else:
             buf += explain_node_str(self.root, 1)
 
         return buf
@@ -148,4 +153,48 @@ class SkewHeap:
             items.append(self.take())
 
         return items
+
+
+
+class AsyncSkewHeap:
+    def __init__(self):
+        super().__init__()
+        self.heap = SkewHeap()
+        self.ev = asyncio.Event()
+        self.sem = asyncio.Semaphore(0)
+
+    @property
+    def is_empty(self):
+        return self.heap.is_empty
+
+    @property
+    def is_stopped(self):
+        return self.ev.is_set()
+
+    def stop(self):
+        self.ev.set()
+
+    async def join(self):
+        if not self.is_stopped:
+            await self.ev.wait()
+
+    async def take(self):
+        if self.is_stopped:
+            return self.heap.take()
+
+        async with self.sem:
+            return self.heap.take()
+
+    def put(self, *args):
+        for item in args:
+            self.heap.put(item)
+
+            if not self.is_stopped:
+                self.sem.release()
+
+    def adopt(self, *heaps):
+        prev_size = self.heap.size
+        self.heap.adopt(*heaps)
+        for _ in range(0, self.heap.size - prev_size):
+            self.sem.release()
 

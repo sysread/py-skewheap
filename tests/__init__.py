@@ -1,10 +1,11 @@
 import unittest
+import asyncio
 import random
 
-from skewheap import SkewHeap
+from skewheap import SkewHeap, AsyncSkewHeap
 
 
-class TestSkewHeap(unittest.TestCase):
+class TestSkewHeap(unittest.IsolatedAsyncioTestCase):
     def test_initial_state(self):
         s = SkewHeap()
         self.assertTrue(s.is_empty)
@@ -84,7 +85,52 @@ class TestSkewHeap(unittest.TestCase):
         s.put(5, 8, 1, 3, 2, 13)
 
         items = s.items()
-        self.assertEqual(list(items), [1, 2, 3, 5, 8, 13])
+
+        expected = [1, 2, 3, 5, 8, 13]
+        for item in items:
+            self.assertEqual(item, expected.pop(0))
+
+    async def test_async(self):
+        count = 10
+        s = AsyncSkewHeap()
+
+        # Test initial state
+        self.assertTrue(s.is_empty)
+
+        # Test reading entries from the queue asynchronously
+        async def reader():
+            for i in range(0, count):
+               item = await s.take()
+               self.assertEqual(item, i)
+
+        items = list(range(0, count))
+        random.shuffle(items)
+        s.put(*items)
+        self.assertFalse(s.is_empty)
+
+        await reader()
+        self.assertTrue(s.is_empty)
+
+    async def test_async_stop_join(self):
+        s = AsyncSkewHeap()
+
+        # Test initial state
+        self.assertFalse(s.is_stopped)
+
+        # Test stopping heap asynchronously with an active coro waiting to join
+        async def stop_heap():
+            await asyncio.sleep(0.1)
+            s.stop()
+
+        await asyncio.wait_for(
+            asyncio.gather(s.join(), stop_heap()),
+            timeout=2,
+        )
+
+        self.assertTrue(s.is_stopped)
+
+        next_item = await asyncio.wait_for(s.take(), timeout=0.1)
+        self.assertIsNone(next_item)
 
 
 if __name__ == '__main__':
