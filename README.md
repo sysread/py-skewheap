@@ -40,29 +40,81 @@ inserted.
 
 ## Installation
 
+write me
+
 ## Class methods
 
 #### merge
+
+Non-destructively merges multiple skew heaps together. The new heap will
+contain all of the items in each of the heaps passed in, in order. Any number
+of heaps may be merged together.
+
+  a = SkewHeap()
+  b = SkewHeap()
+  c = SkewHeap()
+
+  d = SkewHeap.merge(a, b, c)
 
 ## Properties
 
 #### is_empty
 
+`True` when there are no elements in the queue.
+
 ## Instance methods
 
 #### SkewHeap
 
+Creates a new, empty skew heap.
+
+  s = SkewHeap()
+
 #### put
+
+Adds any number of items to the queue.
+
+  s.put("some message")
+  s.put(1, 2, 3)
+  s.put(Task())
 
 #### take
 
+Removes the top element from the queue. Returns `None` if the queue is empty.
+
+
+  item = s.take()
+
 #### peek
+
+Returns the top element from the queue without removing it. Returns `None` if
+the queue is empty.
+
+  item = s.peek()
 
 #### adopt
 
+Merges other heaps into this one. The other heaps are left intact.
+
+  s.merge(heap_x, heap_y, heap_z)
+
 #### items
 
+Returns a generator that yields each element from the queue in turn.
+
+  items = s.items()
+  for item in items:
+    do_stuff_with(item)
+
 #### drain
+
+Removes and returns all items from the queue as a list.
+
+  all_items = s.drain()
+
+## FAQ
+
+#### How do I change the ordering of items in the queue?
 
 ## See also
 
