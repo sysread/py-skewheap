@@ -111,23 +111,24 @@ class TestSkewHeap(unittest.IsolatedAsyncioTestCase):
         await reader()
         self.assertTrue(s.is_empty)
 
-    async def test_async_stop_join(self):
+    async def test_async_shutdown_join(self):
         s = AsyncSkewHeap()
 
         # Test initial state
-        self.assertFalse(s.is_stopped)
+        self.assertFalse(s.is_shutdown)
 
-        # Test stopping heap asynchronously with an active coro waiting to join
-        async def stop_heap():
+        # Test shutting down heap asynchronously with an active coro waiting to
+        # join.
+        async def shutdown_heap():
             await asyncio.sleep(0.1)
-            s.stop()
+            s.shutdown()
 
         await asyncio.wait_for(
-            asyncio.gather(s.join(), stop_heap()),
+            asyncio.gather(s.join(), shutdown_heap()),
             timeout=2,
         )
 
-        self.assertTrue(s.is_stopped)
+        self.assertTrue(s.is_shutdown)
 
         next_item = await asyncio.wait_for(s.take(), timeout=0.1)
         self.assertIsNone(next_item)

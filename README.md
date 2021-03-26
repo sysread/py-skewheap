@@ -42,7 +42,9 @@ inserted.
 
 write me
 
-## Class methods
+## SkewHeap
+
+### Class methods
 
 #### merge
 
@@ -56,13 +58,13 @@ of heaps may be merged together.
 
   d = SkewHeap.merge(a, b, c)
 
-## Properties
+### Properties
 
 #### is_empty
 
 `True` when there are no elements in the queue.
 
-## Instance methods
+### Instance methods
 
 #### SkewHeap
 
@@ -111,6 +113,46 @@ Returns a generator that yields each element from the queue in turn.
 Removes and returns all items from the queue as a list.
 
   all_items = s.drain()
+
+## AsyncSkewHeap
+
+### Properties
+
+#### is_empty
+
+`True` when there are no items in the heap and a call to `take()` would block.
+
+#### is_shutdown
+
+`True` after `shutdown()` has been called. When a queue has been shut down, all
+waiters to `take()` will be awoken and `None` will be returned to them. New items
+may be added to the heap, and _will_ be returned by `take()`, but the queue will
+no longer block when no items are available.
+
+### Instance methods
+
+#### shutdown
+
+Shuts down the queue. See the notes in `is_shutdown` regarding the behavior of
+shutdown queues.
+
+#### async join
+
+Blocks until the heap is shut down.
+
+#### async take
+
+Blocks until an item is available on the queue and returns it.
+
+#### put
+
+Adds any number of elements to the queue.
+
+#### adopt
+
+Merges other queues into this one (either `SkewHeap` or `AsyncSkewHeap`). The
+other queues are left intact.
+
 
 ## FAQ
 

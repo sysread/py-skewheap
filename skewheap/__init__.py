@@ -157,6 +157,9 @@ class SkewHeap:
 
 
 class AsyncSkewHeap:
+    """A SkewHeap whose contents can be accessed asynchronously. Calls
+    to take() will block until an element is available.
+    """
     def __init__(self):
         super().__init__()
         self.heap = SkewHeap()
@@ -165,34 +168,48 @@ class AsyncSkewHeap:
 
     @property
     def is_empty(self):
+        """True when the heap is empty."""
         return self.heap.is_empty
 
     @property
-    def is_stopped(self):
+    def is_shutdown(self):
+        """True once the heap has been shutdown with shutdown()."""
         return self.ev.is_set()
 
-    def stop(self):
+    def shutdown(self):
+        """Shutting down the heap will awaken all pending calls to take(),
+        returning None to them. Future callers to take() will receive immediate
+        results. Items may still be added to the heap, but it will no longer
+        block when calling take().
+        """
         self.ev.set()
 
     async def join(self):
-        if not self.is_stopped:
+        """Blocks until the queue has been shut down."""
+        if not self.is_shutdown:
             await self.ev.wait()
 
     async def take(self):
-        if self.is_stopped:
+        """Returns the next item in the queue, blocking until one is available
+        if necessary.
+        """
+        if self.is_shutdown:
             return self.heap.take()
 
         async with self.sem:
             return self.heap.take()
 
     def put(self, *args):
+        """Adds any number of items to the queue."""
         for item in args:
             self.heap.put(item)
 
-            if not self.is_stopped:
+            if not self.is_shutdown:
                 self.sem.release()
 
     def adopt(self, *heaps):
+        """Merges other heaps into this one. The other heaps are left intact.
+        """
         prev_size = self.heap.size
         self.heap.adopt(*heaps)
         for _ in range(0, self.heap.size - prev_size):
